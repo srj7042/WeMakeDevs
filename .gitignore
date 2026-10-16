@@ -1,0 +1,30 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+
+# Audit & Local DB State
+audit_trail.json
+test_audit_trail.json
+
+# Environment & Secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Excluded from remote repository
+brain/
+impact.csv
+[aA]gents.md
+

@@ -114,6 +114,14 @@ export default function App() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [dbHealthy, setDbHealthy] = useState<boolean>(true);
   const [activeFindingTab, setActiveFindingTab] = useState<'ALL' | 'OBSERVED' | 'INFERRED' | 'UNKNOWN'>('ALL');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('impactgraph_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('impactgraph_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     fetchHealth();
@@ -210,7 +218,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className="header-status">
+        <div className="header-actions">
           <div className="status-indicator">
             <div className={`status-dot ${dbHealthy ? '' : 'disconnected'}`} />
             <span style={{ fontFamily: 'var(--font-mono)' }}>
@@ -218,9 +226,16 @@ export default function App() {
             </span>
           </div>
           <span style={{ color: 'var(--border-color)' }}>•</span>
-          <span style={{ color: 'var(--accent-green)', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
             <code>oracle_incidents</code>
           </span>
+          <button
+            className="theme-toggle-btn"
+            onClick={() => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
+          >
+            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+          </button>
         </div>
       </header>
 
@@ -247,7 +262,7 @@ export default function App() {
                 </div>
                 <div className="card-title">{inc.title}</div>
                 <div className="card-footer">
-                  <span style={{ color: 'var(--accent-green)' }}>{inc.id}</span>
+                  <span style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{inc.id}</span>
                   <span>{inc.alert_count} Alerts</span>
                 </div>
               </div>
@@ -289,13 +304,13 @@ export default function App() {
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Active Alerts</span>
-                  <span className="stat-value" style={{ color: 'var(--accent-green)' }}>
+                  <span className="stat-value" style={{ color: 'var(--accent-primary)' }}>
                     {selectedIncident.alert_count} Active
                   </span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Engine</span>
-                  <span className="stat-value" style={{ color: 'var(--accent-green)', fontFamily: 'var(--font-mono)' }}>
+                  <span className="stat-value" style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>
                     FalkorDB MCP
                   </span>
                 </div>
@@ -305,8 +320,8 @@ export default function App() {
 
           {/* Loading Animation */}
           {loading && (
-            <div className="section-card" style={{ textAlign: 'center', padding: '40px', border: '1px solid var(--accent-green-border)' }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--accent-green)', marginBottom: '8px' }}>
+            <div className="section-card" style={{ textAlign: 'center', padding: '40px', border: '1px solid var(--accent-primary-border)' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '8px' }}>
                 Investigating Incident
               </div>
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
@@ -326,8 +341,8 @@ export default function App() {
                 <p style={{ color: 'var(--text-primary)', fontSize: '0.92rem', lineHeight: '1.6' }}>
                   {report.summary}
                 </p>
-                <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(0, 255, 136, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--accent-green-border)' }}>
-                  <strong style={{ color: 'var(--accent-green)', fontFamily: 'var(--font-mono)' }}>Confidence:</strong>{' '}
+                <div style={{ marginTop: '14px', padding: '12px', background: 'var(--accent-primary-bg)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--accent-primary-border)' }}>
+                  <strong style={{ color: 'var(--accent-primary)', fontFamily: 'var(--font-mono)' }}>Confidence:</strong>{' '}
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>{report.confidence_explanation}</span>
                 </div>
               </div>
@@ -389,7 +404,7 @@ export default function App() {
                       <div style={{ fontSize: '0.65rem', color: 'var(--accent-red)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
                         ORIGIN FAULT
                       </div>
-                      <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', marginTop: '2px' }}>
                         {report.blast_radius.root_service_id}
                       </div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Root Cause</div>
@@ -405,10 +420,10 @@ export default function App() {
                         <div key={svc.service_id} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                           <div className="tree-arrow">← [:DEPENDS_ON]</div>
                           <div className={`tree-node ${svc.criticality === 'Tier 0' ? 'critical-tier0' : 'degraded'}`}>
-                            <div style={{ fontSize: '0.65rem', color: svc.criticality === 'Tier 0' ? 'var(--accent-green)' : 'var(--accent-amber)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                            <div style={{ fontSize: '0.65rem', color: svc.criticality === 'Tier 0' ? 'var(--accent-primary)' : 'var(--accent-amber)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
                               HOP {svc.hop_distance} • {svc.criticality}
                             </div>
-                            <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem', marginTop: '2px' }}>
                               {svc.service_name}
                             </div>
                             <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
@@ -432,13 +447,13 @@ export default function App() {
                         key={tab}
                         onClick={() => setActiveFindingTab(tab)}
                         style={{
-                          background: activeFindingTab === tab ? 'var(--accent-green)' : 'var(--bg-tertiary)',
-                          color: activeFindingTab === tab ? '#04140b' : 'var(--text-secondary)',
+                          background: activeFindingTab === tab ? 'var(--accent-primary)' : 'var(--bg-secondary)',
+                          color: activeFindingTab === tab ? '#FAF9F6' : 'var(--text-secondary)',
                           fontSize: '0.72rem',
                           fontWeight: 700,
-                          padding: '4px 10px',
+                          padding: '5px 12px',
                           borderRadius: 'var(--radius-sm)',
-                          border: activeFindingTab === tab ? '1px solid var(--accent-green)' : '1px solid var(--border-color)',
+                          border: activeFindingTab === tab ? '1px solid var(--accent-primary)' : '1px solid var(--border-color)',
                           fontFamily: 'var(--font-mono)',
                         }}
                       >
@@ -486,7 +501,7 @@ export default function App() {
                   <tbody>
                     {report.evidence_chain.map(ev => (
                       <tr key={ev.evidence_id}>
-                        <td><code style={{ color: 'var(--accent-green)' }}>{ev.evidence_id}</code></td>
+                        <td><code style={{ color: 'var(--accent-primary)' }}>{ev.evidence_id}</code></td>
                         <td><span className="tag-evidence">{ev.source_type}</span></td>
                         <td>{ev.service_name || 'N/A'} {ev.deployment_id ? `(${ev.deployment_id})` : ''}</td>
                         <td>{ev.observation}</td>
@@ -506,10 +521,10 @@ export default function App() {
                 <div className="action-box">
                   <div className="action-header">
                     <div>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-green)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-primary)', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
                         Proposed Action
                       </span>
-                      <h3 style={{ color: '#fff', fontSize: '1.15rem', marginTop: '2px' }}>
+                      <h3 style={{ color: 'var(--text-primary)', fontSize: '1.15rem', marginTop: '2px' }}>
                         {report.proposed_action.action_type}: <code>{report.proposed_action.target}</code>
                       </h3>
                     </div>
@@ -519,7 +534,7 @@ export default function App() {
                   </div>
 
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '10px', lineHeight: '1.5' }}>
-                    <strong style={{ color: '#fff' }}>Rationale:</strong> {report.proposed_action.rationale}
+                    <strong style={{ color: 'var(--text-primary)' }}>Rationale:</strong> {report.proposed_action.rationale}
                   </p>
 
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px', fontFamily: 'var(--font-mono)' }}>
@@ -556,11 +571,11 @@ export default function App() {
                   {/* Simulated Outcome Display */}
                   {report.proposed_action.status === 'EXECUTED' && report.proposed_action.simulated_outcome && (
                     <div className="outcome-box">
-                      <div style={{ fontWeight: 700, color: 'var(--accent-green)', fontSize: '0.9rem', marginBottom: '6px' }}>
+                      <div style={{ fontWeight: 700, color: 'var(--accent-primary)', fontSize: '0.9rem', marginBottom: '6px' }}>
                         ✓ Executed by {report.proposed_action.approved_by}
                       </div>
                       <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                        Est. Recovery: <strong style={{ color: '#fff' }}>{report.proposed_action.simulated_outcome.expected_recovery_time_sec}s</strong>
+                        Est. Recovery: <strong style={{ color: 'var(--text-primary)' }}>{report.proposed_action.simulated_outcome.expected_recovery_time_sec}s</strong>
                       </div>
                       <ul style={{ paddingLeft: '18px', fontSize: '0.82rem', color: 'var(--text-primary)' }}>
                         {report.proposed_action.simulated_outcome.steps_simulated?.map((step: string, i: number) => (
@@ -595,9 +610,9 @@ export default function App() {
                     <tbody>
                       {auditTrail.map(entry => (
                         <tr key={entry.audit_id}>
-                          <td><code style={{ color: 'var(--accent-green)' }}>{entry.audit_id}</code></td>
+                          <td><code style={{ color: 'var(--accent-primary)' }}>{entry.audit_id}</code></td>
                           <td><code>{entry.proposal_id}</code></td>
-                          <td><strong style={{ color: '#fff' }}>{entry.action_type}</strong></td>
+                          <td><strong style={{ color: 'var(--text-primary)' }}>{entry.action_type}</strong></td>
                           <td><code>{entry.target}</code></td>
                           <td>{entry.actor}</td>
                           <td>
